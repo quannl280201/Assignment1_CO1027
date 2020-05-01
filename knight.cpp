@@ -214,6 +214,8 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				combat(theKnight, maxHP, i+1, Troll, TrollDamage, nOut);
 				if (nOut == -1) return;
 				break;
+			case Shaman:
+				break;
 		}
 	}
 	nOut = theKnight.HP + theKnight.level + theKnight.remedy + theKnight.maidenkiss + theKnight.phoenixdown;
