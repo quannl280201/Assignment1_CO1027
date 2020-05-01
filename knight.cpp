@@ -23,9 +23,9 @@ enum EVENT{
 	Troll,
 	Shaman,
 	SirenVajsh,
-	Excalibur,
-	Mythirl,
-	Excalipoor,
+	findExcalibur,
+	findMythirl,
+	findExcalipoor,
 	MushMario,
 	MushFib,
 	MushGhost,
@@ -42,11 +42,19 @@ enum EVENT{
 	Bowser = 99
 };
 enum STATUS{
-	tiny = 1,
+	normal,
+	tiny,
 	frog
+};
+enum WEAPON{
+	Excalibur = 1,
+	Mythirl,
+	Excalipoor
 };
 int currentStatus = 0;
 int statusTime = 0;
+int levelBeforeChangeToFrog = 0;
+int currentWeapon = 0;
 struct knight
 {
    int HP;
@@ -176,7 +184,7 @@ void combat(knight &theKnight, int maxHP, int event, int opponent, float baseDam
 	int b = event % 10;
 	int levelO = event > 6 ? (b > 5 ? b : 5) : b;
 	//cout << "LevelO: " << levelO << '\n';
-	if (theKnight.level > levelO) {
+	if (theKnight.level > levelO || currentWeapon == Excalibur) {
 		theKnight.level = (theKnight.level + 1) > 10 ? 10 : (theKnight.level + 1);  
 	}
 	else if (theKnight.level < levelO) {
@@ -184,6 +192,7 @@ void combat(knight &theKnight, int maxHP, int event, int opponent, float baseDam
 		theKnight.HP = theKnight.HP - damage;
 		if (theKnight.HP < 0) {
 			if (theKnight.phoenixdown) {
+				currentStatus = normal;
 				theKnight.HP = maxHP;
 				theKnight.phoenixdown = theKnight.phoenixdown - 1;
 			}
@@ -191,26 +200,64 @@ void combat(knight &theKnight, int maxHP, int event, int opponent, float baseDam
 		} 
 	}
 }
-void dealWithShaman_Vajsh(knight &theKnight, int maxHP, int event, int opponent, int &nOut){
+void dealWithShaman_Vajsh(knight &theKnight, int maxHP, int event, int opponent){
+	if (currentStatus == tiny || currentStatus == frog) return;
 	int b = event % 10;
 	int levelO = event > 6 ? (b > 5 ? b : 5) : b;
 	if (theKnight.level > levelO) {
 		theKnight.level = (theKnight.level + 2) > 10 ? 10 : (theKnight.level + 2);  
 	}
 	else if (theKnight.level < levelO) {
-		theKnight.HP = theKnight.HP < 5 ? 1 : (theKnight.HP / 5);
-		currentStatus = tiny;
-		statusTime = 3;
-		if (theKnight.remedy) {
-			theKnight.remedy = theKnight.remedy - 1;
-			theKnight.HP = (theKnight.HP * 5) > maxHP ? maxHP : (theKnight.HP * 5);
+		switch(opponent) {
+			case Shaman: 
+				theKnight.HP = theKnight.HP < 5 ? 1 : (theKnight.HP / 5);
+				currentStatus = tiny;
+				statusTime = 4;
+				if (theKnight.remedy) {
+					theKnight.remedy = theKnight.remedy - 1;
+					theKnight.HP = (theKnight.HP * 5) > maxHP ? maxHP : (theKnight.HP * 5);
+					currentStatus = normal;
+					statusTime = 0;
+				}
+				break;
+			case SirenVajsh:
+				levelBeforeChangeToFrog = theKnight.level;
+				theKnight.level = 1;
+				currentStatus = frog;
+				statusTime = 4;
+				if(theKnight.maidenkiss) {
+					theKnight.maidenkiss = theKnight.maidenkiss - 1;
+					theKnight.level = levelBeforeChangeToFrog;
+					currentStatus = normal;
+					statusTime = 0;
+				}
+				break;
+		}
+	}
+}
+void statusCheck(int & statusTime, knight &theKnight, int maxHP){
+	if (statusTime > 1) {
+		statusTime = statusTime - 1;
+	}
+	else if(statusTime == 1) {
+		switch (currentStatus)
+		{
+			case tiny:
+				statusTime = statusTime  - 1;
+				theKnight.HP = (theKnight.HP * 5 > maxHP) ? maxHP : (theKnight.HP * 5);
+				currentStatus = normal; 
+				break;
+			case frog:
+				statusTime = statusTime  - 1;
+				theKnight.level = levelBeforeChangeToFrog;
+				currentStatus = normal;
+
 		}
 	}
 }
 void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 	int maxHP = theKnight.HP;
-	for (int i = 0; i < nEvent; i++) {
-		statusTime = statusTime != 0 ? (statusTime - 1) : statusTime; 
+	for (int i = 0; i < nEvent; i++) { 
 		switch(arrEvent[i]) {
 			case GuinevereReturn:
 				nOut = theKnight.HP + theKnight.level + theKnight.remedy + theKnight.maidenkiss + theKnight.phoenixdown;
@@ -236,9 +283,16 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				if (nOut == -1) return;
 				break;
 			case Shaman:
-				dealWithShaman_Vajsh(theKnight, maxHP, i+1, Shaman, nOut);
+				dealWithShaman_Vajsh(theKnight, maxHP, i+1, Shaman);
+				break;
+			case SirenVajsh:
+				dealWithShaman_Vajsh(theKnight, maxHP, i+1, SirenVajsh);
+				break;
+			case findExcalibur:
+				currentWeapon = Excalibur;
 				break;
 		}
+		statusCheck(statusTime, theKnight, maxHP);
 	}
 	nOut = theKnight.HP + theKnight.level + theKnight.remedy + theKnight.maidenkiss + theKnight.phoenixdown;
 }
