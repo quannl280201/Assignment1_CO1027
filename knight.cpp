@@ -252,12 +252,11 @@ void statusCheck(int & statusTime, knight &theKnight, int maxHP){
 				statusTime = statusTime  - 1;
 				theKnight.level = levelBeforeChangeToFrog;
 				currentStatus = normal;
-
 		}
 	}
 }
-int nextFibonacci(int n) { 
-    double a = n * (1 + sqrt(5)) / 2.0; 
+int nextFibonacci(int HP) { 
+    double a = HP * (1 + sqrt(5)) / 2.0; 
     return round(a);
 }
 void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
@@ -314,6 +313,40 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 			case MushKnight:
 				maxHP = (maxHP + 50) > 999 ? 999 : (maxHP + 50);
 				theKnight.HP = maxHP;
+				break;
+			case Remedy:
+				if (currentStatus == tiny) {
+					currentStatus = normal;
+					statusTime = 0;
+					theKnight.HP = (theKnight.HP * 5) > maxHP ? maxHP : (theKnight.HP * 5);
+				}
+				else theKnight.remedy = (theKnight.remedy + 1) > 99 ? 99 : (theKnight.remedy + 1);				
+				break;
+			case MaidenKiss:
+				if (currentStatus == frog) {
+					currentStatus = normal;
+					statusTime = 0;
+					theKnight.level = levelBeforeChangeToFrog;
+				}
+				else theKnight.maidenkiss = (theKnight.maidenkiss + 1) > 99 ? 99 : (theKnight.maidenkiss + 1);
+				break;
+			case PhoenixDown:
+				theKnight.phoenixdown = theKnight.phoenixdown + 1;
+				break;
+			case Merlin:
+				if (currentStatus == tiny || currentStatus == frog) {
+					theKnight.level = (currentStatus == frog) ? levelBeforeChangeToFrog : theKnight.level;
+					currentStatus = normal;
+					statusTime = 0;
+				}
+				theKnight.level = (theKnight.level + 1) > 10 ? 10 : (theKnight.level + 1);
+				theKnight.HP = maxHP;
+				break;
+			case Abyss:
+				if (theKnight.level < 7) {
+					nOut = -1;
+					return;
+				} 
 				break;
 		}
 		statusCheck(statusTime, theKnight, maxHP);
