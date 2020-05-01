@@ -22,7 +22,7 @@ enum EVENT{
 	Elf,
 	Troll,
 	Shaman,
-	SirenVajish,
+	SirenVajsh,
 	Excalibur,
 	Mythirl,
 	Excalipoor,
@@ -41,8 +41,12 @@ enum EVENT{
 	DragonSowrd,
 	Bowser = 99
 };
-
-
+enum STATUS{
+	tiny = 1,
+	frog
+};
+int currentStatus = 0;
+int statusTime = 0;
 struct knight
 {
    int HP;
@@ -187,9 +191,26 @@ void combat(knight &theKnight, int maxHP, int event, int opponent, float baseDam
 		} 
 	}
 }
+void dealWithShaman_Vajsh(knight &theKnight, int maxHP, int event, int opponent, int &nOut){
+	int b = event % 10;
+	int levelO = event > 6 ? (b > 5 ? b : 5) : b;
+	if (theKnight.level > levelO) {
+		theKnight.level = (theKnight.level + 2) > 10 ? 10 : (theKnight.level + 2);  
+	}
+	else if (theKnight.level < levelO) {
+		theKnight.HP = theKnight.HP < 5 ? 1 : (theKnight.HP / 5);
+		currentStatus = tiny;
+		statusTime = 3;
+		if (theKnight.remedy) {
+			theKnight.remedy = theKnight.remedy - 1;
+			theKnight.HP = (theKnight.HP * 5) > maxHP ? maxHP : (theKnight.HP * 5);
+		}
+	}
+}
 void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 	int maxHP = theKnight.HP;
 	for (int i = 0; i < nEvent; i++) {
+		statusTime = statusTime != 0 ? (statusTime - 1) : statusTime; 
 		switch(arrEvent[i]) {
 			case GuinevereReturn:
 				nOut = theKnight.HP + theKnight.level + theKnight.remedy + theKnight.maidenkiss + theKnight.phoenixdown;
@@ -215,6 +236,7 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				if (nOut == -1) return;
 				break;
 			case Shaman:
+				dealWithShaman_Vajsh(theKnight, maxHP, i+1, Shaman, nOut);
 				break;
 		}
 	}
