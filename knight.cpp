@@ -27,7 +27,7 @@ enum EVENT{
 	findMythirl,
 	findExcalipoor,
 	MushMario,
-	MushFib,
+	MushFibo,
 	MushGhost,
 	MushKnight,
 	Remedy,
@@ -48,13 +48,13 @@ enum STATUS{
 };
 enum WEAPON{
 	Excalibur = 1,
-	Mythirl,
 	Excalipoor
 };
 int currentStatus = 0;
 int statusTime = 0;
 int levelBeforeChangeToFrog = 0;
 int currentWeapon = 0;
+bool isWearMythirl = false;
 struct knight
 {
    int HP;
@@ -184,10 +184,11 @@ void combat(knight &theKnight, int maxHP, int event, int opponent, float baseDam
 	int b = event % 10;
 	int levelO = event > 6 ? (b > 5 ? b : 5) : b;
 	//cout << "LevelO: " << levelO << '\n';
-	if (theKnight.level > levelO || currentWeapon == Excalibur) {
+	if (currentWeapon != Excalipoor && (theKnight.level > levelO || currentWeapon == Excalibur)) {
 		theKnight.level = (theKnight.level + 1) > 10 ? 10 : (theKnight.level + 1);  
 	}
-	else if (theKnight.level < levelO) {
+	else if (theKnight.level < levelO || currentWeapon == Excalipoor) {
+		if (isWearMythirl) return;
 		float damage = baseDamage * levelO * 10; 
 		theKnight.HP = theKnight.HP - damage;
 		if (theKnight.HP < 0) {
@@ -210,7 +211,7 @@ void dealWithShaman_Vajsh(knight &theKnight, int maxHP, int event, int opponent)
 	else if (theKnight.level < levelO) {
 		switch(opponent) {
 			case Shaman: 
-				theKnight.HP = theKnight.HP < 5 ? 1 : (theKnight.HP / 5);
+				if(!isWearMythirl) theKnight.HP = theKnight.HP < 5 ? 1 : (theKnight.HP / 5);
 				currentStatus = tiny;
 				statusTime = 4;
 				if (theKnight.remedy) {
@@ -255,6 +256,10 @@ void statusCheck(int & statusTime, knight &theKnight, int maxHP){
 		}
 	}
 }
+int nextFibonacci(int n) { 
+    double a = n * (1 + sqrt(5)) / 2.0; 
+    return round(a);
+}
 void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 	int maxHP = theKnight.HP;
 	for (int i = 0; i < nEvent; i++) { 
@@ -290,6 +295,25 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				break;
 			case findExcalibur:
 				currentWeapon = Excalibur;
+				break;
+			case findMythirl:
+				isWearMythirl = true;
+				break;
+			case findExcalipoor:
+				currentWeapon = theKnight.level >= 5 ? currentWeapon : Excalipoor;
+				break;
+			case MushMario:
+				theKnight.HP = (theKnight.HP + 50) > maxHP ? maxHP : (theKnight.HP + 50);
+				break;
+			case MushFibo:
+				theKnight.HP = (nextFibonacci(theKnight.HP) > maxHP) ? maxHP : nextFibonacci(theKnight.HP);
+				break;
+			case MushGhost:
+				theKnight.HP = theKnight.HP < 51 ? 1 : (theKnight.HP - 50);
+				break;
+			case MushKnight:
+				maxHP = (maxHP + 50) > 999 ? 999 : (maxHP + 50);
+				theKnight.HP = maxHP;
 				break;
 		}
 		statusCheck(statusTime, theKnight, maxHP);
