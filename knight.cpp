@@ -38,7 +38,7 @@ enum EVENT{
 	Guinevere,
 	LightWing,
 	Odin,
-	DragonSowrd,
+	findDragonSowrd,
 	Bowser = 99
 };
 enum STATUS{
@@ -48,13 +48,18 @@ enum STATUS{
 };
 enum WEAPON{
 	Excalibur = 1,
-	Excalipoor
+	Excalipoor,
+	DragonSowrd
 };
 int currentStatus = 0;
 int statusTime = 0;
 int levelBeforeChangeToFrog = 0;
 int currentWeapon = 0;
+int odinHelpLeft = 0;
 bool isWearMythirl = false;
+bool isHelpByOdin = false;
+bool useOdinHelpThisTurn = false;
+bool isDragonKnight = false;
 struct knight
 {
    int HP;
@@ -184,8 +189,12 @@ void combat(knight &theKnight, int maxHP, int event, int opponent, float baseDam
 	int b = event % 10;
 	int levelO = event > 6 ? (b > 5 ? b : 5) : b;
 	//cout << "LevelO: " << levelO << '\n';
-	if (currentWeapon != Excalipoor && (theKnight.level > levelO || currentWeapon == Excalibur)) {
-		theKnight.level = (theKnight.level + 1) > 10 ? 10 : (theKnight.level + 1);  
+	if (odinHelpLeft > 0 || currentWeapon != Excalipoor && (theKnight.level > levelO || currentWeapon == Excalibur)) {
+		theKnight.level = (theKnight.level + 1) > 10 ? 10 : (theKnight.level + 1);
+		if (odinHelpLeft) {
+			odinHelpLeft = odinHelpLeft - 1;
+			useOdinHelpThisTurn = true;
+		}  
 	}
 	else if (theKnight.level < levelO || currentWeapon == Excalipoor) {
 		if (isWearMythirl) return;
@@ -205,8 +214,12 @@ void dealWithShaman_Vajsh(knight &theKnight, int maxHP, int event, int opponent)
 	if (currentStatus == tiny || currentStatus == frog) return;
 	int b = event % 10;
 	int levelO = event > 6 ? (b > 5 ? b : 5) : b;
-	if (theKnight.level > levelO) {
-		theKnight.level = (theKnight.level + 2) > 10 ? 10 : (theKnight.level + 2);  
+	if (odinHelpLeft > 0 || theKnight.level > levelO) {
+		theKnight.level = (theKnight.level + 2) > 10 ? 10 : (theKnight.level + 2);
+		if (odinHelpLeft) {
+			odinHelpLeft = odinHelpLeft - 1;
+			useOdinHelpThisTurn = true;
+		}
 	}
 	else if (theKnight.level < levelO) {
 		switch(opponent) {
@@ -259,9 +272,20 @@ int nextFibonacci(int HP) {
     double a = HP * (1 + sqrt(5)) / 2.0; 
     return round(a);
 }
+void odinHelpCheck(){
+	if(!useOdinHelpThisTurn) {
+		odinHelpLeft = odinHelpLeft - 1;
+	}
+	else useOdinHelpThisTurn = false;			
+}
 void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 	int maxHP = theKnight.HP;
 	for (int i = 0; i < nEvent; i++) { 
+		cout << "Event: " << i << '\n';
+		cout << "Knight index: " << theKnight.HP << " " << theKnight.level << " " << theKnight.remedy << " " << theKnight.maidenkiss << " " << theKnight.phoenixdown << '\n';
+		cout << "Check status: " << currentStatus << '\n';
+		cout << "currentWeapon: " << currentWeapon << '\n';
+		cout << "Odin help: " << odinHelpLeft << '\n';
 		switch(arrEvent[i]) {
 			case GuinevereReturn:
 				nOut = theKnight.HP + theKnight.level + theKnight.remedy + theKnight.maidenkiss + theKnight.phoenixdown;
@@ -299,7 +323,11 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				isWearMythirl = true;
 				break;
 			case findExcalipoor:
-				currentWeapon = theKnight.level >= 5 ? currentWeapon : Excalipoor;
+				if (odinHelpLeft) {
+					odinHelpLeft = odinHelpLeft - 1;
+					useOdinHelpThisTurn = true;
+				}
+				else currentWeapon = theKnight.level >= 5 ? currentWeapon : Excalipoor;
 				break;
 			case MushMario:
 				theKnight.HP = (theKnight.HP + 50) > maxHP ? maxHP : (theKnight.HP + 50);
@@ -308,7 +336,11 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				theKnight.HP = (nextFibonacci(theKnight.HP) > maxHP) ? maxHP : nextFibonacci(theKnight.HP);
 				break;
 			case MushGhost:
-				theKnight.HP = theKnight.HP < 51 ? 1 : (theKnight.HP - 50);
+				if (odinHelpLeft) {
+					odinHelpLeft = odinHelpLeft - 1;
+					useOdinHelpThisTurn = true;
+				}
+				else theKnight.HP = theKnight.HP < 51 ? 1 : (theKnight.HP - 50);
 				break;
 			case MushKnight:
 				maxHP = (maxHP + 50) > 999 ? 999 : (maxHP + 50);
@@ -343,7 +375,11 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				theKnight.HP = maxHP;
 				break;
 			case Abyss:
-				if (theKnight.level < 7) {
+				if (odinHelpLeft) {
+					odinHelpLeft = odinHelpLeft - 1;
+					useOdinHelpThisTurn = true;
+				}
+				else if (theKnight.level < 7) {
 					nOut = -1;
 					return;
 				} 
@@ -361,6 +397,7 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 					return;
 				}
 			case LightWing:
+				if (odinHelpLeft) odinHelpLeft = 0;
 				if ((nEvent - i) < 3) {
 					nOut = theKnight.HP + theKnight.level + theKnight.remedy + theKnight.maidenkiss + theKnight.phoenixdown;
 					return;
@@ -376,8 +413,19 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 					if (currentStatus) statusTime = statusTime + 3;
 				}
 				break;
+			case Odin:
+				if (!isHelpByOdin) {
+					odinHelpLeft = 4;
+					isHelpByOdin = true;
+				}
+				break;
+			case findDragonSowrd:
+				if (isDragonKnight) currentWeapon = DragonSowrd;
+				break;
 		}
 		statusCheck(statusTime, theKnight, maxHP);
+		if(odinHelpLeft) odinHelpCheck();
+		
 	}
 	nOut = theKnight.HP + theKnight.level + theKnight.remedy + theKnight.maidenkiss + theKnight.phoenixdown;
 }
