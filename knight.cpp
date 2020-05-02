@@ -373,6 +373,7 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 						}
 					}
 					i = i + 3;
+					if (currentStatus) statusTime = statusTime + 3;
 				}
 				break;
 		}
