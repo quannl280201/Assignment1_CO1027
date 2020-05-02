@@ -348,6 +348,33 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 					return;
 				} 
 				break;
+			case Guinevere:
+				{
+					int numberOfEventPassed = i;
+					int *arrEventInvert = new int[numberOfEventPassed];
+					for (int index = 0; index < numberOfEventPassed; index++) {
+						arrEventInvert[index] = arrEvent[i - 1];
+						i--;
+					}
+					process(theKnight, numberOfEventPassed, arrEventInvert, nOut);
+					delete[] arrEventInvert;
+					return;
+				}
+			case LightWing:
+				if ((nEvent - i) < 3) {
+					nOut = theKnight.HP + theKnight.level + theKnight.remedy + theKnight.maidenkiss + theKnight.phoenixdown;
+					return;
+				}
+				else {
+					for (int j = i + 1; j < i + 4; j++) {
+						if (arrEvent[j] == GuinevereReturn || arrEvent[j] == Guinevere) {
+							nOut = theKnight.HP + theKnight.level + theKnight.remedy + theKnight.maidenkiss + theKnight.phoenixdown;
+							return; 
+						}
+					}
+					i = i + 3;
+				}
+				break;
 		}
 		statusCheck(statusTime, theKnight, maxHP);
 	}
