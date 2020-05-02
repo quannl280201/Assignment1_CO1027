@@ -12,6 +12,10 @@ using namespace std;
 #define LordLupinDamage  4.5
 #define ElfDamage  6.5
 #define TrollDamage  8.5
+#define ArthurHP 999
+#define LanceLotHP 888
+#define likeArthur true
+#define likeNormal false
 const int EVENT_SIZE = 100;
 const int MAX_CHARACTER_EACH_LINE = 250;
 enum EVENT{
@@ -60,6 +64,11 @@ bool isWearMythirl = false;
 bool isHelpByOdin = false;
 bool useOdinHelpThisTurn = false;
 bool isDragonKnight = false;
+bool meetGuinevere = false;
+bool isArthur = false;
+bool isLancelot = false;
+bool isPaladin = false;
+bool LancelotBehavior = false;
 struct knight
 {
    int HP;
@@ -189,7 +198,7 @@ void combat(knight &theKnight, int maxHP, int event, int opponent, float baseDam
 	int b = event % 10;
 	int levelO = event > 6 ? (b > 5 ? b : 5) : b;
 	//cout << "LevelO: " << levelO << '\n';
-	if (odinHelpLeft > 0 || currentWeapon != Excalipoor && (theKnight.level > levelO || currentWeapon == Excalibur)) {
+	if (odinHelpLeft > 0 || isArthur || isPaladin || isLancelot && LancelotBehavior || currentWeapon != Excalipoor && (theKnight.level > levelO || currentWeapon == Excalibur)) {
 		theKnight.level = (theKnight.level + 1) > 10 ? 10 : (theKnight.level + 1);
 		if (odinHelpLeft) {
 			odinHelpLeft = odinHelpLeft - 1;
@@ -211,10 +220,9 @@ void combat(knight &theKnight, int maxHP, int event, int opponent, float baseDam
 	}
 }
 void dealWithShaman_Vajsh(knight &theKnight, int maxHP, int event, int opponent){
-	if (currentStatus == tiny || currentStatus == frog) return;
 	int b = event % 10;
 	int levelO = event > 6 ? (b > 5 ? b : 5) : b;
-	if (odinHelpLeft > 0 || theKnight.level > levelO) {
+	if (odinHelpLeft > 0 || isArthur || isLancelot && LancelotBehavior || isPaladin || theKnight.level > levelO) {
 		theKnight.level = (theKnight.level + 2) > 10 ? 10 : (theKnight.level + 2);
 		if (odinHelpLeft) {
 			odinHelpLeft = odinHelpLeft - 1;
@@ -278,14 +286,22 @@ void odinHelpCheck(){
 	}
 	else useOdinHelpThisTurn = false;			
 }
+bool isPaladincheck(int hp){
+	int m = hp / 2;
+	for (int i = 2; i < m; i++) {
+		if (hp % i == 0) return false;
+	}
+	return true;
+}
 void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 	int maxHP = theKnight.HP;
 	for (int i = 0; i < nEvent; i++) { 
-		cout << "Event: " << i << '\n';
-		cout << "Knight index: " << theKnight.HP << " " << theKnight.level << " " << theKnight.remedy << " " << theKnight.maidenkiss << " " << theKnight.phoenixdown << '\n';
-		cout << "Check status: " << currentStatus << '\n';
-		cout << "currentWeapon: " << currentWeapon << '\n';
-		cout << "Odin help: " << odinHelpLeft << '\n';
+		// cout << "Event: " << i << '\n';
+		// cout << "Knight index: " << theKnight.HP << " " << theKnight.level << " " << theKnight.remedy << " " << theKnight.maidenkiss << " " << theKnight.phoenixdown << '\n';
+		// cout << "Check status: " << currentStatus << '\n';
+		// cout << "currentWeapon: " << currentWeapon << '\n';
+		// cout << "Odin help: " << odinHelpLeft << '\n';
+		if (isLancelot) LancelotBehavior = (theKnight.level % 2 == 0) ? likeNormal : likeArthur;  
 		switch(arrEvent[i]) {
 			case GuinevereReturn:
 				nOut = theKnight.HP + theKnight.level + theKnight.remedy + theKnight.maidenkiss + theKnight.phoenixdown;
@@ -311,9 +327,11 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				if (nOut == -1) return;
 				break;
 			case Shaman:
+				if (currentStatus == tiny || currentStatus == frog) break;
 				dealWithShaman_Vajsh(theKnight, maxHP, i+1, Shaman);
 				break;
 			case SirenVajsh:
+				if (currentStatus == tiny || currentStatus == frog) break;
 				dealWithShaman_Vajsh(theKnight, maxHP, i+1, SirenVajsh);
 				break;
 			case findExcalibur:
@@ -323,7 +341,7 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				isWearMythirl = true;
 				break;
 			case findExcalipoor:
-				if (odinHelpLeft) {
+				if (odinHelpLeft || isArthur || isLancelot && LancelotBehavior || isPaladin) {
 					odinHelpLeft = odinHelpLeft - 1;
 					useOdinHelpThisTurn = true;
 				}
@@ -336,7 +354,7 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				theKnight.HP = (nextFibonacci(theKnight.HP) > maxHP) ? maxHP : nextFibonacci(theKnight.HP);
 				break;
 			case MushGhost:
-				if (odinHelpLeft) {
+				if (odinHelpLeft || isPaladin) {
 					odinHelpLeft = odinHelpLeft - 1;
 					useOdinHelpThisTurn = true;
 				}
@@ -385,7 +403,8 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				} 
 				break;
 			case Guinevere:
-				{
+				{	
+					meetGuinevere = true;
 					int numberOfEventPassed = i;
 					int *arrEventInvert = new int[numberOfEventPassed];
 					for (int index = 0; index < numberOfEventPassed; index++) {
@@ -398,7 +417,7 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				}
 			case LightWing:
 				if (odinHelpLeft) odinHelpLeft = 0;
-				if ((nEvent - i) < 3) {
+				if ((nEvent - i) < 3 || meetGuinevere) {
 					nOut = theKnight.HP + theKnight.level + theKnight.remedy + theKnight.maidenkiss + theKnight.phoenixdown;
 					return;
 				}
@@ -422,6 +441,12 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 			case findDragonSowrd:
 				if (isDragonKnight) currentWeapon = DragonSowrd;
 				break;
+			case Bowser:
+				if (isArthur || isLancelot || isPaladin && theKnight.level >= 8 || theKnight.level == 10) break;
+				else {
+					nOut = -1;
+					return;
+				}
 		}
 		statusCheck(statusTime, theKnight, maxHP);
 		if(odinHelpLeft) odinHelpCheck();
@@ -441,9 +466,13 @@ int main(int argc, char** argv)
    int nOut = 0;                           // final result
 
 	readFile(filename, theKnight, nEvent, arrEvent);
+
+	if (theKnight.HP == ArthurHP) isArthur = true;
+	else if (theKnight.HP == LanceLotHP) isLancelot = true;
+	else if (isPaladincheck(theKnight.HP)) isPaladin = true;
 	process(theKnight, nEvent, arrEvent, nOut);
 	//cout << theKnight.HP << " " << theKnight.level << " " << theKnight.remedy << " " << theKnight.maidenkiss << " " << theKnight.phoenixdown << '\n';
-    display(nOut);
+    
+	display(nOut);
 	return 0;
 }
-
