@@ -222,14 +222,14 @@ void combat(knight &theKnight, int maxHP, int event, int opponent, float baseDam
 void dealWithShaman_Vajsh(knight &theKnight, int maxHP, int event, int opponent){
 	int b = event % 10;
 	int levelO = event > 6 ? (b > 5 ? b : 5) : b;
-	if (odinHelpLeft > 0 || isArthur || isLancelot && LancelotBehavior || isPaladin || theKnight.level > levelO) {
+	if (odinHelpLeft > 0 || isArthur || isLancelot && LancelotBehavior || isPaladin || (theKnight.level > levelO && currentWeapon != Excalipoor)) {
 		theKnight.level = (theKnight.level + 2) > 10 ? 10 : (theKnight.level + 2);
 		if (odinHelpLeft) {
 			odinHelpLeft = odinHelpLeft - 1;
 			useOdinHelpThisTurn = true;
 		}
 	}
-	else if (theKnight.level < levelO) {
+	else if (theKnight.level < levelO || currentWeapon == Excalipoor) {
 		switch(opponent) {
 			case Shaman: 
 				if(!isWearMythirl) theKnight.HP = theKnight.HP < 5 ? 1 : (theKnight.HP / 5);
@@ -442,7 +442,7 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &nOut){
 				if (isDragonKnight) currentWeapon = DragonSowrd;
 				break;
 			case Bowser:
-				if (isArthur || isLancelot || isPaladin && theKnight.level >= 8 || theKnight.level == 10) break;
+				if (isArthur || isLancelot || isPaladin && theKnight.level >= 8 || (theKnight.level == 10 && currentWeapon != Excalipoor)) break;
 				else {
 					nOut = -1;
 					return;
