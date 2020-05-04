@@ -483,7 +483,6 @@ int main(int argc, char** argv)
 	else if (theKnight.HP == LanceLotHP) theKnight.isLancelot = true;
 	else if (isPaladincheck(theKnight.HP)) theKnight.isPaladin = true;
 	else theKnight.isDragonKnight = isDragonKnightCheck(theKnight.HP);
-	cout << isDragonKnightCheck(theKnight.HP) << '\n';
 	process(theKnight, nEvent, arrEvent, result, 0);
 	//cout << theKnight.HP << " " << theKnight.level << " " << theKnight.remedy << " " << theKnight.maidenkiss << " " << theKnight.phoenixdown << '\n';
     
