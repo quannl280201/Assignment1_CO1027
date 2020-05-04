@@ -198,7 +198,7 @@ void display(int &result)
 void combat(knight &theKnight, int maxHP, int event, int opponent, float baseDamage, int &result){
 	int b = event % 10;
 	int levelO = event > 6 ? (b > 5 ? b : 5) : b;
-	if (theKnight.odinHelpLeft > 0 || theKnight.isArthur || theKnight.isPaladin || theKnight.isLancelot && theKnight.LancelotBehavior || theKnight.currentWeapon != Excalipoor && (theKnight.level > levelO || theKnight.currentWeapon == Excalibur)) {
+	if (theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd || theKnight.odinHelpLeft > 0 || theKnight.isArthur || theKnight.isPaladin || theKnight.isLancelot && theKnight.LancelotBehavior || theKnight.currentWeapon != Excalipoor && (theKnight.level > levelO || theKnight.currentWeapon == Excalibur)) {
 		theKnight.level = (theKnight.level + 1) > 10 ? 10 : (theKnight.level + 1);
 		if (theKnight.odinHelpLeft) {
 			theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
@@ -222,7 +222,7 @@ void combat(knight &theKnight, int maxHP, int event, int opponent, float baseDam
 void dealWithShaman_Vajsh(knight &theKnight, int maxHP, int event, int opponent){
 	int b = event % 10;
 	int levelO = event > 6 ? (b > 5 ? b : 5) : b;
-	if (theKnight.odinHelpLeft > 0 || theKnight.isArthur || theKnight.isLancelot && theKnight.LancelotBehavior || theKnight.isPaladin || (theKnight.level > levelO && theKnight.currentWeapon != Excalipoor)) {
+	if (theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd || theKnight.odinHelpLeft > 0 || theKnight.isArthur || theKnight.isLancelot && theKnight.LancelotBehavior || theKnight.isPaladin || (theKnight.level > levelO && theKnight.currentWeapon != Excalipoor)) {
 		theKnight.level = (theKnight.level + 2) > 10 ? 10 : (theKnight.level + 2);
 		if (theKnight.odinHelpLeft) {
 			theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
@@ -293,6 +293,15 @@ bool isPaladincheck(int hp){
 	}
 	return true;
 }
+bool isDragonKnightCheck(int HP){ 
+    for (int i = 1; i <= HP / 3; i++) { 
+        for (int j = i + 1; j <= HP / 2; j++) { 
+            int k = HP - i - j; 
+            if (i * i + j * j == k * k) return true;             
+        }
+    }
+    return false;
+} 
 void process(knight &theKnight, int nEvent, int *arrEvent, int &result, int nEventPassed){
 	int maxHP = theKnight.HP;
 	for (int i = 0 + nEventPassed; i < nEvent; i++) { 
@@ -330,13 +339,14 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &result, int nEve
 				dealWithShaman_Vajsh(theKnight, maxHP, i+1, SirenVajsh);
 				break;
 			case findExcalibur:
+				if (theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd)break;
 				theKnight.currentWeapon = Excalibur;
 				break;
 			case findMythirl:
 				theKnight.isWearMythirl = true;
 				break;
 			case findExcalipoor:
-				if (theKnight.odinHelpLeft || theKnight.isArthur || theKnight.isLancelot && theKnight.LancelotBehavior || theKnight.isPaladin) {
+				if (theKnight.isDragonKnight || theKnight.odinHelpLeft || theKnight.isArthur || theKnight.isLancelot && theKnight.LancelotBehavior || theKnight.isPaladin) {
 					theKnight.odinHelpLeft = (theKnight.odinHelpLeft > 0) ? theKnight.odinHelpLeft - 1 : theKnight.odinHelpLeft;
 					theKnight.useOdinHelpThisTurn = true;
 				}
@@ -349,7 +359,7 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &result, int nEve
 				theKnight.HP = (nextFibonacci(theKnight.HP) > maxHP) ? maxHP : nextFibonacci(theKnight.HP);
 				break;
 			case MushGhost:
-				if (theKnight.odinHelpLeft || theKnight.isPaladin) {
+				if (theKnight.odinHelpLeft || theKnight.isPaladin || theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd) {
 					theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
 					theKnight.useOdinHelpThisTurn = true;
 				}
@@ -388,7 +398,7 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &result, int nEve
 				theKnight.HP = maxHP;
 				break;
 			case Abyss:
-				if (theKnight.odinHelpLeft) {
+				if (theKnight.odinHelpLeft || theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd) {
 					theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
 					theKnight.useOdinHelpThisTurn = true;
 				}
@@ -443,7 +453,7 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &result, int nEve
 				if (theKnight.isDragonKnight) theKnight.currentWeapon = DragonSowrd;
 				break;
 			case Bowser:
-				if (theKnight.isArthur || theKnight.isLancelot || theKnight.isPaladin && theKnight.level >= 8 || (theKnight.level == 10 && theKnight.currentWeapon != Excalipoor)) break;
+				if (theKnight.isArthur || theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd || theKnight.isLancelot || theKnight.isPaladin && theKnight.level >= 8 || (theKnight.level == 10 && theKnight.currentWeapon != Excalipoor)) break;
 				else {
 					result = -1;
 					return;
@@ -472,6 +482,8 @@ int main(int argc, char** argv)
 	if (theKnight.HP == ArthurHP) theKnight.isArthur = true;
 	else if (theKnight.HP == LanceLotHP) theKnight.isLancelot = true;
 	else if (isPaladincheck(theKnight.HP)) theKnight.isPaladin = true;
+	else theKnight.isDragonKnight = isDragonKnightCheck(theKnight.HP);
+	cout << isDragonKnightCheck(theKnight.HP) << '\n';
 	process(theKnight, nEvent, arrEvent, result, 0);
 	//cout << theKnight.HP << " " << theKnight.level << " " << theKnight.remedy << " " << theKnight.maidenkiss << " " << theKnight.phoenixdown << '\n';
     
