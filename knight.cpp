@@ -360,7 +360,7 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &result, int nEve
 				break;
 			case MushGhost:
 				if (theKnight.odinHelpLeft || theKnight.isPaladin || theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd) {
-					theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
+					if (theKnight.odinHelpLeft) theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
 					theKnight.useOdinHelpThisTurn = true;
 				}
 				else theKnight.HP = theKnight.HP < 51 ? 1 : (theKnight.HP - 50);
@@ -470,10 +470,10 @@ int main(int argc, char** argv)
     if (argc < 2) return 1;
     const char* filename = argv[1];;
 
-   struct knight theKnight;
-   int nEvent; //number of events
-   int* arrEvent = new int[EVENT_SIZE]; // array of events
-   int *nOut;                           // final result
+   	struct knight theKnight;
+   	int nEvent; //number of events
+   	int* arrEvent = new int[EVENT_SIZE]; // array of events
+   	int *nOut;                           // final result
 
 	readFile(filename, theKnight, nEvent, arrEvent);
 
