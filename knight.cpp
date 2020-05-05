@@ -460,6 +460,11 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &result, int nEve
 				break;
 			case Bowser:
 				if (theKnight.isArthur || theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd || theKnight.isLancelot || theKnight.isPaladin && theKnight.level >= 8 || (theKnight.level == 10 && theKnight.currentWeapon != Excalipoor)) break;
+				else if (theKnight.odinHelpLeft) {
+						theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
+						theKnight.useOdinHelpThisTurn = true;
+						break;
+				}
 				else {
 					result = -1;
 					return;
