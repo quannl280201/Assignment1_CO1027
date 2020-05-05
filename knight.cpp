@@ -459,16 +459,18 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &result, int nEve
 				if (theKnight.isDragonKnight) theKnight.currentWeapon = DragonSowrd;
 				break;
 			case Bowser:
-				if (theKnight.isArthur || theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd || theKnight.isLancelot || theKnight.isPaladin && theKnight.level >= 8 || (theKnight.level == 10 && theKnight.currentWeapon != Excalipoor)) break;
-				else if (theKnight.odinHelpLeft) {
+				if (theKnight.isArthur || theKnight.odinHelpLeft || theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd || theKnight.isLancelot || theKnight.isPaladin && theKnight.level >= 8 || (theKnight.level == 10 && theKnight.currentWeapon != Excalipoor)){
+					if (theKnight.odinHelpLeft) {
 						theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
 						theKnight.useOdinHelpThisTurn = true;
-						break;
+					}
+					theKnight.level = 10;
 				}
 				else {
 					result = -1;
 					return;
 				}
+				break;
 		}
 		statusCheck(theKnight, maxHP);
 		if(theKnight.odinHelpLeft) odinHelpCheck(theKnight);
