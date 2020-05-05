@@ -347,8 +347,10 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &result, int nEve
 				break;
 			case findExcalipoor:
 				if (theKnight.isDragonKnight || theKnight.odinHelpLeft || theKnight.isArthur || theKnight.isLancelot && theKnight.LancelotBehavior || theKnight.isPaladin) {
-					theKnight.odinHelpLeft = (theKnight.odinHelpLeft > 0) ? theKnight.odinHelpLeft - 1 : theKnight.odinHelpLeft;
-					theKnight.useOdinHelpThisTurn = true;
+					if (theKnight.odinHelpLeft) {
+						theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
+						theKnight.useOdinHelpThisTurn = true;
+					}
 				}
 				else theKnight.currentWeapon = theKnight.level >= 5 ? theKnight.currentWeapon : Excalipoor;
 				break;
@@ -360,8 +362,10 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &result, int nEve
 				break;
 			case MushGhost:
 				if (theKnight.odinHelpLeft || theKnight.isPaladin || theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd) {
-					if (theKnight.odinHelpLeft) theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
-					theKnight.useOdinHelpThisTurn = true;
+					if (theKnight.odinHelpLeft) {
+						theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
+						theKnight.useOdinHelpThisTurn = true;
+					}
 				}
 				else theKnight.HP = theKnight.HP < 51 ? 1 : (theKnight.HP - 50);
 				break;
@@ -399,8 +403,10 @@ void process(knight &theKnight, int nEvent, int *arrEvent, int &result, int nEve
 				break;
 			case Abyss:
 				if (theKnight.odinHelpLeft || theKnight.isDragonKnight && theKnight.currentWeapon == DragonSowrd) {
-					theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
-					theKnight.useOdinHelpThisTurn = true;
+					if (theKnight.odinHelpLeft) {
+						theKnight.odinHelpLeft = theKnight.odinHelpLeft - 1;
+						theKnight.useOdinHelpThisTurn = true;
+					}
 				}
 				else if (theKnight.level < 7) {
 					result = -1;
